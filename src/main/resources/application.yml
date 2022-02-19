@@ -1,0 +1,47 @@
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:moviegame
+    username: admin
+    datasource: moviegame
+  jpa:
+    show-sql: true
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: basic
+jwt:
+  expirate: 18000
+  secret: moviebattle
+
+movies:
+  api:
+    base-path: http://www.omdbapi.com/
+    api-key: 575ea628
+#    search: ['Love', 'Adventures', 'and the']
+    search: ['Love']
+    limit-page: 1
+    type: movie
+
+swagger:
+  path: localhost:8080
+  apiinfo:
+    title: Refinaria API
+    description: Sistema de refinaria para nivelamento de candidatos
+    termsOfServiceUrl: "http://localhost:8080"
+    license: ""
+    licenseUrl: "http://localhost:8080"
+    version: 1.0.0-SNAPSHOT
