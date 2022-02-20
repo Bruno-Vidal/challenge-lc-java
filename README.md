@@ -24,13 +24,13 @@ key="Authorization" value="Bearer " + token
 
 Para obter o token realize a requisição no controlador de login
 
-Exsite por padrão dois jogadores criados: 
-  Jogador 1 :
-    email: player1@test.com
-    senha: 12345678
-  Jogador 2 :
-    email: player2@test.com
-    senha: 12345678
+Exsite por padrão dois jogadores criados: \
+  Jogador 1 :\
+    &nbsp; email: player1@test.com\
+    &nbsp; senha: 12345678\
+  Jogador 2 :\
+    &nbsp; email: player2@test.com\
+    &nbsp; senha: 12345678
     
 O serviço de Ranking é publico
 
