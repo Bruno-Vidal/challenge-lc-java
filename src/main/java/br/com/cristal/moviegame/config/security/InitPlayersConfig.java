@@ -9,19 +9,27 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @RequiredArgsConstructor
-public class RemoveClassConfig {
+public class InitPlayersConfig {
 
     private final PlayerRepository playerRepository;
     private final PasswordEncryptService passwordEncryptService;
 
-    // TODO remove method
     @Bean
     public void run() {
         playerRepository.save(
                 new Player(
                         null ,
-                        "Bruno Vidal",
-                        "kitokoioto@gmail.com",
+                        "Primeiro Jogador",
+                        "player1@test.com",
+                        passwordEncryptService.encode("12345678")
+                )
+        );
+
+        playerRepository.save(
+                new Player(
+                        null ,
+                        "Segundo Jogador",
+                        "player2@test.com",
                         passwordEncryptService.encode("12345678")
                 )
         );

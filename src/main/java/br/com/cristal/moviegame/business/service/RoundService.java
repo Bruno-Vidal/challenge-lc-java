@@ -28,7 +28,7 @@ public class RoundService {
 
         Movie first = movieService.getRandom();
 
-        List<Long> idsPair = findPairIds(first,game);
+        List<Long> idsPair = findPairIds(first, game);
 
         Movie secund = movieService.getRandomExceptInList(idsPair);
 
@@ -38,6 +38,35 @@ public class RoundService {
         return roundRepository.saveAndFlush(round);
 
     }
+
+    public Round currentRound(Player player) {
+        return roundRepository.currentRound(player)
+                .orElseThrow(() -> new RuntimeException("Não existe rodada ativa"));
+    }
+
+    public Boolean answerRight(ChoiceRoundRequest choiceRoundRequest, Round round) {
+
+        completeMovies(round);
+
+        Map<ChoiceRound, Movie> mapMovie = new HashMap<>();
+
+        mapMovie.put(ChoiceRound.FIRST, round.getFirstMovie());
+        mapMovie.put(ChoiceRound.SECUND, round.getSecundMovie());
+
+        Movie better = movieService.better(round.getFirstMovie(), round.getSecundMovie());
+
+
+        return mapMovie.get(choiceRoundRequest.getChoice()).equals(better);
+    }
+
+    public void save(Round round) {
+        roundRepository.save(round);
+    }
+
+    public Boolean existsCurrentRound(Game game) {
+        return roundRepository.currentRound(game.getPlayer()).isPresent();
+    }
+
 
     private List<Long> findPairIds(Movie movie, Game game) {
 
@@ -49,7 +78,7 @@ public class RoundService {
                 .map(Movie::getId)
                 .collect(Collectors.toList());
 
-        idsPair.addAll( game
+        idsPair.addAll(game
                 .getRounds()
                 .stream()
                 .filter(r -> r.getSecundMovie().equals(movie))
@@ -74,36 +103,8 @@ public class RoundService {
                 .build();
     }
 
-    public Round currentRound(Player player) {
-        return roundRepository.currentRound(player)
-                .orElseThrow(() -> new RuntimeException("Não existe roud ativo"));
-    }
-
-    public Boolean answerRight(ChoiceRoundRequest choiceRoundRequest, Round round) {
-
-        completeMovies(round);
-
-        Map<ChoiceRound,Movie> mapMovie = new HashMap<>();
-
-        mapMovie.put(ChoiceRound.FIRST,round.getFirstMovie());
-        mapMovie.put(ChoiceRound.SECUND,round.getSecundMovie());
-
-        Movie better = movieService.better(round.getFirstMovie(), round.getSecundMovie());
-
-
-        return mapMovie.get(choiceRoundRequest.getChoice()).equals(better);
-    }
-
     private void completeMovies(Round round) {
         movieService.complete(round.getFirstMovie());
         movieService.complete(round.getSecundMovie());
-    }
-
-    public void save(Round round) {
-        roundRepository.save(round);
-    }
-
-    public Boolean existsCurrentRound(Game game) {
-        return roundRepository.currentRound(game.getPlayer()).isPresent();
     }
 }

@@ -1,5 +1,6 @@
 package br.com.cristal.moviegame.config.dock;
 
+import br.com.cristal.moviegame.MoviegameApplication;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -8,6 +9,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.ParameterBuilder;
 import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.schema.ModelRef;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.Parameter;
@@ -57,13 +59,12 @@ public class SwaggerDocumentation {
 
         Set<String> protocols = new HashSet<>();
         protocols.add("http");
-        protocols.add("https");
 
         return new Docket(DocumentationType.SWAGGER_2).host(swaggerPath)
                 .groupName("All")
                 .apiInfo(apiInfo())
                 .select()
-                .paths(PathSelectors.any())
+                .apis(RequestHandlerSelectors.basePackage("br.com.cristal.moviegame.entrypoint.controller"))
                 .build()
                 .protocols(protocols)
                 .ignoredParameterTypes(ApiIgnore.class)

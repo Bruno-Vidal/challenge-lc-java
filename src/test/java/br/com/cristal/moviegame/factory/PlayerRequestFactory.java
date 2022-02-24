@@ -1,15 +1,15 @@
 package br.com.cristal.moviegame.factory;
 
-import br.com.cristal.moviegame.entrypoint.dto.response.PlayerResponse;
+import br.com.cristal.moviegame.entrypoint.dto.request.PlayerRequest;
 
-public class PlayerResponseFactory {
+public class PlayerRequestFactory {
 
-    public static PlayerResponse any() {
-        return PlayerResponse
+    public static PlayerRequest any() {
+        return PlayerRequest
                 .builder()
                 .email("bruno@test.com.br")
                 .name("Bruno vidal")
-                .id(1L)
+                .password("12345678")
                 .build();
     }
 }

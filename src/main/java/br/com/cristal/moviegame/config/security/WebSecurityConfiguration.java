@@ -1,12 +1,9 @@
 package br.com.cristal.moviegame.config.security;
 
-import br.com.cristal.moviegame.business.entity.Player;
-import br.com.cristal.moviegame.business.repository.PlayerRepository;
-import br.com.cristal.moviegame.business.service.utils.PasswordEncryptService;
+import br.com.cristal.moviegame.config.rotes.GameRoteMapping;
 import br.com.cristal.moviegame.config.rotes.LoginRoteMapping;
 import br.com.cristal.moviegame.config.rotes.PlayerRoteMapping;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -34,18 +31,17 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 
-//TODO refatorar
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService;
     private final CustomAuthenticationFilter customAuthenticationFilter;
-//    private final JwtFilter jwtFilter;
+    private final PasswordEncoder passwordEncoder;
 
     @Bean
     AuthenticationProvider authenticationProvider(){
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
-            provider.setPasswordEncoder(new BCryptPasswordEncoder());
+        provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
 
@@ -53,17 +49,6 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     protected AuthenticationManager authenticationManager() throws Exception {
         return super.authenticationManager();
-    }
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type"));
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
     }
 
     @Override
@@ -96,6 +81,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                         PlayerRoteMapping.BASE,
                         LoginRoteMapping.BASE
                         )
+                .permitAll()
+                .antMatchers(HttpMethod.GET, GameRoteMapping.PATH_RANKING)
                 .permitAll()
                 .anyRequest()
                 .authenticated()

@@ -1,4 +1,4 @@
-package br.com.cristal.moviegame.entrypoint.controller;
+package br.com.cristal.moviegame.config.dock;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

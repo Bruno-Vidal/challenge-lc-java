@@ -64,7 +64,9 @@ public class Game {
                 .filter(r -> r.getRoundStatus().equals(RoundStatus.CORRERCT))
                 .count();
         // TODO conversar com o time LC pois o calculo se anula
-        Double calcSocre = rounds.size() * (Double.valueOf(amountCorrect) / rounds.size());
+        Double calcSocre =
+                rounds.size() != 0 ?
+                rounds.size() * (Double.valueOf(amountCorrect) / rounds.size()) : 0 ;
         this.setScore(calcSocre);
     }
 }

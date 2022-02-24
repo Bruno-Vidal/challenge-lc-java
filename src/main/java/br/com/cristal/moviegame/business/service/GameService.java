@@ -8,9 +8,9 @@ import br.com.cristal.moviegame.business.entity.RoundStatus;
 import br.com.cristal.moviegame.business.mapper.GameMapper;
 import br.com.cristal.moviegame.business.mapper.RoundMapper;
 import br.com.cristal.moviegame.business.repository.GameRepository;
+import br.com.cristal.moviegame.config.handler.exceptions.GameInitException;
 import br.com.cristal.moviegame.entrypoint.dto.request.ChoiceRoundRequest;
 import br.com.cristal.moviegame.entrypoint.dto.response.GameResponse;
-import br.com.cristal.moviegame.entrypoint.dto.response.RankingResponse;
 import br.com.cristal.moviegame.entrypoint.dto.response.ResultRoundResponse;
 import br.com.cristal.moviegame.entrypoint.dto.response.RoundResponse;
 import lombok.RequiredArgsConstructor;
@@ -29,82 +29,48 @@ public class GameService {
     private final GameMapper gameMapper;
     private final RoundMapper roundMapper;
 
+    public List<GameResponse> getAll() {
+        Player player = customUserDetailsService.loadUser();
+        return gameRepository
+                .findAllByPlayer(player)
+                .stream()
+                .map(gameMapper::toResponse)
+                .collect(Collectors.toList())
+                ;
+    }
+
     public GameResponse createGame() {
 
         Player player = customUserDetailsService.loadUser();
 
-        if (existCurrentGame(player)) {
+        Boolean existCurrentGame = gameRepository
+                .findByGameStatusAndPlayer(GameStatus.STARTED, player)
+                .isPresent();
 
-            throw new RuntimeException("Já existe um jogo iniciado");
+        if (existCurrentGame) {
+            throw new GameInitException("Já existe um jogo iniciado");
         }
 
-        Game game = initGame(player);
-        game = newRoundToGame(game);
+        Game game = Game
+                .builder()
+                .player(player)
+                .build();
+
+        game = gameRepository.save(game);
 
         return gameMapper.toResponse(game);
 
     }
 
-    private Game newRoundToGame(Game game) {
-        Round round = initRound(game);
-        game.getRounds().add(round);
-        game = gameRepository.saveAndFlush(game);
-        return game;
-    }
-
-    private Round initRound(Game game) {
-
-        return roundService.creteToGame(game);
-    }
-
-    private Game initGame(Player player) {
-        return gameRepository.saveAndFlush(
-                Game
-                        .builder()
-                        .player(player)
-                        .build()
-        );
-    }
-
-    private boolean existCurrentGame(Player player) {
-        return gameRepository.findByGameStatusAndPlayer(GameStatus.STARTED, player).isPresent();
-    }
-
     public ResultRoundResponse choiceToCurrentRound(ChoiceRoundRequest choiceRoundRequest) {
 
 
-        Round currentRound = getCurrentRound();
+        Round currentRound = currentRound();
         Boolean rigth = roundService.answerRight(choiceRoundRequest, currentRound);
 
         confirmRound(currentRound, rigth);
 
         return roundMapper.toResult(currentRound, rigth);
-    }
-
-    public Round getCurrentRound() {
-        Player player = customUserDetailsService.loadUser();
-        return roundService.currentRound(player);
-    }
-
-    private void confirmRound(Round currentRound, Boolean rigth) {
-        RoundStatus status = rigth ? RoundStatus.CORRERCT : RoundStatus.WRONG;
-
-        Game game = currentRound.getGame();
-
-        currentRound.setRoundStatus(status);
-
-        roundService.save(currentRound);
-
-        if (!rigth) {
-            game.takeLife();
-        }
-
-        if (game.getLifes() <= 0) {
-            this.finishGame();
-        }
-
-        gameRepository.save(game);
-
     }
 
     public GameResponse finishGame() {
@@ -128,28 +94,48 @@ public class GameService {
         Game game = currentGame();
 
         if (!roundService.existsCurrentRound(game)) {
-            this.newRoundToGame(game);
+            Round round = roundService.creteToGame(game);
+            game.getRounds().add(round);
+            gameRepository.saveAndFlush(game);
         }
 
-        Round currentRound = getCurrentRound();
+        Round currentRound = currentRound();
 
         return roundMapper.toResponse(currentRound);
+    }
+
+
+
+    private void confirmRound(Round currentRound, Boolean rigth) {
+        RoundStatus status = rigth ? RoundStatus.CORRERCT : RoundStatus.WRONG;
+
+        Game game = currentRound.getGame();
+
+        currentRound.setRoundStatus(status);
+
+        roundService.save(currentRound);
+
+        if (!rigth) {
+            game.takeLife();
+        }
+
+        if (game.getLifes() <= 0) {
+            this.finishGame();
+        }
+
+        gameRepository.save(game);
+
     }
 
     private Game currentGame() {
         Player player = customUserDetailsService.loadUser();
         return gameRepository.currentGame(player)
-                .orElseThrow(() -> new RuntimeException("Não existe game ativo"));
+                .orElseThrow(() -> new GameInitException("Não existe jogo ativo"));
     }
 
-    public List<GameResponse> getAll() {
+    private Round currentRound() {
         Player player = customUserDetailsService.loadUser();
-        return gameRepository
-                .findAllByPlayer(player)
-                .stream()
-                .map(gameMapper::toResponse)
-                .collect(Collectors.toList())
-                ;
+        return roundService.currentRound(player);
     }
 
 

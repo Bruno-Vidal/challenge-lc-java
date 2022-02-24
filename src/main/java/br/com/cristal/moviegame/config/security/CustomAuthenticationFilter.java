@@ -5,9 +5,11 @@ import br.com.cristal.moviegame.config.rotes.LoginRoteMapping;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,13 +37,18 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
 
         if (!path.equals(LoginRoteMapping.BASE)) {
-            verifyToken(request, response);
+            try {
+                verifyToken();
+            }catch (JWTVerificationException exception) {
+                response.setStatus(HttpStatus.FORBIDDEN.value());
+            }
+
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private void verifyToken(HttpServletRequest request, HttpServletResponse response) {
+    private void verifyToken() {
         DecodedJWT decodedJWT = tokenService.getDecodedJWT();
 
         if (decodedJWT != null) {

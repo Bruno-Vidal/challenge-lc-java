@@ -31,16 +31,15 @@ movies:
   api:
     base-path: http://www.omdbapi.com/
     api-key: 575ea628
-#    search: ['Love', 'Adventures', 'and the']
-    search: ['Love']
-    limit-page: 1
+    search: ['Love', 'Adventures', 'and the']
+    limit-page: 3
     type: movie
 
 swagger:
   path: localhost:8080
   apiinfo:
-    title: Refinaria API
-    description: Sistema de refinaria para nivelamento de candidatos
+    title: Movie Battle API
+    description: Serviços para o jogo Movie Battle
     termsOfServiceUrl: "http://localhost:8080"
     license: ""
     licenseUrl: "http://localhost:8080"
